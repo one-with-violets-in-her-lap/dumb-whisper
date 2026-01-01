@@ -11,6 +11,12 @@ class Segment:
 
 
 @dataclass
+class TranscriptionInfo:
+    seconds_duration: float
+
+
+@dataclass
 class Transcription:
     segments: Generator[Segment]
     language: str
+    info: TranscriptionInfo

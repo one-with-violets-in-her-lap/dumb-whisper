@@ -20,7 +20,7 @@ from .audio import (
 from .decoding import DecodingOptions, DecodingResult
 from .timing import add_word_timestamps
 from .tokenizer import LANGUAGES, TO_LANGUAGE_CODE, get_tokenizer
-from .types import Segment, Transcription
+from .types import Segment, Transcription, TranscriptionInfo
 from .utils import (
     exact_div,
     format_timestamp,
@@ -549,7 +549,7 @@ def transcribe(
                     text=segment["text"],
                 )
 
-    return Transcription(segments=transcribe_generator(), language=language)
+    return Transcription(segments=transcribe_generator(), language=language, info=TranscriptionInfo(seconds_duration=content_duration))
 
 
 def cli():
