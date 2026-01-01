@@ -1,5 +1,5 @@
 include requirements.txt
 include README.md
 include LICENSE
-include whisper/assets/*
-include whisper/normalizers/english.json
+include dumb_whisper/assets/*
+include dumb_whisper/normalizers/english.json
