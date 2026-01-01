@@ -8,8 +8,6 @@ import numpy as np
 import torch
 import tqdm
 
-from whisper.types import Segment, TranscriptionResult
-
 from .audio import (
     FRAMES_PER_SECOND,
     HOP_LENGTH,
@@ -22,6 +20,7 @@ from .audio import (
 from .decoding import DecodingOptions, DecodingResult
 from .timing import add_word_timestamps
 from .tokenizer import LANGUAGES, TO_LANGUAGE_CODE, get_tokenizer
+from .types import Segment, TranscriptionResult
 from .utils import (
     exact_div,
     format_timestamp,
@@ -287,10 +286,14 @@ def transcribe(
                     continue
                 time_offset = float(seek * HOP_LENGTH / SAMPLE_RATE)
                 window_end_time = float((seek + N_FRAMES) * HOP_LENGTH / SAMPLE_RATE)
-                segment_size = min(N_FRAMES, content_frames - seek, seek_clip_end - seek)
+                segment_size = min(
+                    N_FRAMES, content_frames - seek, seek_clip_end - seek
+                )
                 mel_segment = mel[:, seek : seek + segment_size]
                 segment_duration = segment_size * HOP_LENGTH / SAMPLE_RATE
-                mel_segment = pad_or_trim(mel_segment, N_FRAMES).to(model.device).to(dtype)
+                mel_segment = (
+                    pad_or_trim(mel_segment, N_FRAMES).to(model.device).to(dtype)
+                )
 
                 if carry_initial_prompt:
                     nignored = max(len(initial_prompt_tokens), prompt_reset_since)
@@ -313,7 +316,9 @@ def transcribe(
                         should_skip = False
 
                     if should_skip:
-                        seek += segment_size  # fast-forward to the next segment boundary
+                        seek += (
+                            segment_size  # fast-forward to the next segment boundary
+                        )
                         continue
 
                 previous_seek = seek
@@ -335,7 +340,9 @@ def transcribe(
                 def is_segment_anomaly(segment: Optional[dict]) -> bool:
                     if segment is None or not segment["words"]:
                         return False
-                    words = [w for w in segment["words"] if w["word"] not in punctuation]
+                    words = [
+                        w for w in segment["words"] if w["word"] not in punctuation
+                    ]
                     words = words[:8]
                     score = sum(word_anomaly_score(w) for w in words)
                     return score >= 3 or score + 0.01 >= len(words)
@@ -344,9 +351,14 @@ def transcribe(
                     return next((s for s in segments if s["words"]), None)
 
                 timestamp_tokens: torch.Tensor = tokens.ge(tokenizer.timestamp_begin)
-                single_timestamp_ending = timestamp_tokens[-2:].tolist() == [False, True]
+                single_timestamp_ending = timestamp_tokens[-2:].tolist() == [
+                    False,
+                    True,
+                ]
 
-                consecutive = torch.where(timestamp_tokens[:-1] & timestamp_tokens[1:])[0]
+                consecutive = torch.where(timestamp_tokens[:-1] & timestamp_tokens[1:])[
+                    0
+                ]
                 consecutive.add_(1)
                 if len(consecutive) > 0:
                     # if the output contains two consecutive timestamp tokens
@@ -365,7 +377,8 @@ def transcribe(
                         )
                         current_segments.append(
                             new_segment(
-                                start=time_offset + start_timestamp_pos * time_precision,
+                                start=time_offset
+                                + start_timestamp_pos * time_precision,
                                 end=time_offset + end_timestamp_pos * time_precision,
                                 tokens=sliced_tokens,
                                 result=result,
@@ -427,7 +440,10 @@ def transcribe(
                         threshold = hallucination_silence_threshold
                         if not single_timestamp_ending:
                             last_word_end = get_end(current_segments)
-                            if last_word_end is not None and last_word_end > time_offset:
+                            if (
+                                last_word_end is not None
+                                and last_word_end > time_offset
+                            ):
                                 remaining_duration = window_end_time - last_word_end
                                 if remaining_duration > threshold:
                                     seek = round(last_word_end * FRAMES_PER_SECOND)
@@ -436,7 +452,9 @@ def transcribe(
 
                         # if first segment might be a hallucination, skip leading silence
                         first_segment = next_words_segment(current_segments)
-                        if first_segment is not None and is_segment_anomaly(first_segment):
+                        if first_segment is not None and is_segment_anomaly(
+                            first_segment
+                        ):
                             gap = first_segment["start"] - time_offset
                             if gap > threshold:
                                 seek = previous_seek + round(gap * FRAMES_PER_SECOND)
@@ -484,13 +502,20 @@ def transcribe(
 
                 if verbose:
                     for segment in current_segments:
-                        start, end, text = segment["start"], segment["end"], segment["text"]
+                        start, end, text = (
+                            segment["start"],
+                            segment["end"],
+                            segment["text"],
+                        )
                         line = f"[{format_timestamp(start)} --> {format_timestamp(end)}] {text}"
                         print(make_safe(line))
 
                 # if a segment is instantaneous or does not contain text, clear it
                 for i, segment in enumerate(current_segments):
-                    if segment["start"] == segment["end"] or segment["text"].strip() == "":
+                    if (
+                        segment["start"] == segment["end"]
+                        or segment["text"].strip() == ""
+                    ):
                         segment["text"] = ""
                         segment["tokens"] = []
                         segment["words"] = []
@@ -504,7 +529,11 @@ def transcribe(
                     ]
                 )
                 all_tokens.extend(
-                    [token for segment in current_segments for token in segment["tokens"]]
+                    [
+                        token
+                        for segment in current_segments
+                        for token in segment["tokens"]
+                    ]
                 )
 
                 if not condition_on_previous_text or result.temperature > 0.5:
@@ -513,7 +542,12 @@ def transcribe(
 
                 # update progress bar
                 pbar.update(min(content_frames, seek) - previous_seek)
-                yield Segment(id=i, start=segment["start"], end=segment["end"], text=segment["text"])
+                yield Segment(
+                    id=i,
+                    start=segment["start"],
+                    end=segment["end"],
+                    text=segment["text"],
+                )
 
     return TranscriptionResult(segments=transcribe_generator(), language=language)
 
