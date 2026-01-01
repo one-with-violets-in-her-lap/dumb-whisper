@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 requires = [ "setuptools>=61.2" ]
 
 [project]
-name = "openai-whisper"
-description = "Robust Speech Recognition via Large-Scale Weak Supervision"
+name = "dumb-whisper"
+description = "Whisper with better API (e.g., progress tracking and type safety)"
 readme.content-type = "text/markdown"
 readme.file = "README.md"
 license = { text = "MIT" }
