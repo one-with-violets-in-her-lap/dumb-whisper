@@ -20,7 +20,7 @@ from .audio import (
 from .decoding import DecodingOptions, DecodingResult
 from .timing import add_word_timestamps
 from .tokenizer import LANGUAGES, TO_LANGUAGE_CODE, get_tokenizer
-from .types import Segment, TranscriptionResult
+from .types import Segment, Transcription
 from .utils import (
     exact_div,
     format_timestamp,
@@ -54,7 +54,7 @@ def transcribe(
     clip_timestamps: Union[str, List[float]] = "0",
     hallucination_silence_threshold: Optional[float] = None,
     **decode_options,
-) -> TranscriptionResult:
+) -> Transcription:
     """
     Transcribe an audio file using Whisper
 
@@ -549,7 +549,7 @@ def transcribe(
                     text=segment["text"],
                 )
 
-    return TranscriptionResult(segments=transcribe_generator(), language=language)
+    return Transcription(segments=transcribe_generator(), language=language)
 
 
 def cli():

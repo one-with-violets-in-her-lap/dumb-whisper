@@ -11,6 +11,6 @@ class Segment:
 
 
 @dataclass
-class TranscriptionResult:
+class Transcription:
     segments: Generator[Segment]
     language: str
