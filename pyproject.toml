@@ -31,15 +31,15 @@ dependencies = [
   "triton>=2; (platform_machine=='x86_64' and sys_platform=='linux') or sys_platform=='linux2'",
 ]
 optional-dependencies.dev = [ "black", "flake8", "isort", "pytest", "scipy" ]
-urls = { Homepage = "https://github.com/openai/whisper" }
-scripts.whisper = "whisper.transcribe:cli"
+urls = { Homepage = "https://github.com/one-with-violets-in-her-lap/dumb-whisper" }
+scripts.whisper = "dumb_whisper.transcribe:cli"
 
 [tool.setuptools]
 py-modules = [ "whisper" ]
 include-package-data = true
 
 [tool.setuptools.dynamic]
-version = { attr = "whisper.version.__version__" }
+version = { attr = "dumb_whisper.version.__version__" }
 
 [tool.setuptools.packages.find]
 exclude = [ "tests*" ]
