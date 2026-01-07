@@ -542,12 +542,14 @@ def transcribe(
 
                 # update progress bar
                 pbar.update(min(content_frames, seek) - previous_seek)
-                yield Segment(
-                    id=i,
-                    start=segment["start"],
-                    end=segment["end"],
-                    text=segment["text"],
-                )
+
+                for i, segment in enumerate(current_segments, start=len(all_segments)):
+                    yield Segment(
+                        id=i,
+                        start=segment["start"],
+                        end=segment["end"],
+                        text=segment["text"],
+                    )
 
     return Transcription(segments=transcribe_generator(), language=language, info=TranscriptionInfo(seconds_duration=content_duration))
 
